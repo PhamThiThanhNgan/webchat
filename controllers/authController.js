@@ -1,14 +1,15 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const asyncHandler = require('express-async-handler');
 const sendEmail = require("../utils/sendEmail");
 
 let refreshTokens = [];// 
 
 const authController = {
      //REGISTER
-     //method: pt
-     registerUser: async (req, res) => {
+     //method: post
+     registerUser: asyncHandler(async (req, res) => {
           try {
                //mhmk
                const salt = await bcrypt.genSalt(10);
@@ -24,7 +25,6 @@ const authController = {
                     //Create new user
                     const newUser = await new User({
                          username: req.body.username,
-                         avatar: 'images.png',
                          email: req.body.email,
                          password: hashed,
                     });
@@ -36,7 +36,7 @@ const authController = {
           } catch (err) {
                res.status(500).json({ status: '500', message: "Internal Server Error", data: err });
           }
-     },
+     }),
 
      generateAccessToken: (user) => {
           return jwt.sign(
@@ -57,7 +57,7 @@ const authController = {
                if (!user) {
                     res.status(404).json({ status: '404', message: "Tài khoản không tồn tại!" });
                }
-               //mahoapassword so sanh password tren database
+               //ma hoa password so sanh password tren database
                const validPassword = await bcrypt.compare(
                     req.body.password,
                     user.password
@@ -143,12 +143,12 @@ const authController = {
                res.status(500).json({ message: "Internal Server Error" });
           }
      },
-     // ham xac thuc link send trong gmail.
      resetPassword: async (req, res) => {
           const { id, token } = req.params;
-
+          
           let user = await User.findOne({ _id: id });
-    
+          
+          // ham xac thuc link send trong gmail.
           if (!user) return res.status(400).send({ message: "Liên kết không hợp lệ" });
           if (!token) return res.status(400).send({ message: "Liên kết không hợp lệ" });
     

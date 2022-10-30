@@ -1,9 +1,10 @@
+const asyncHandler = require('express-async-handler');
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const middlewareController = {
      //verifyToken
-     verifyToken: async (req, res, next) => {
+     verifyToken: asyncHandler(async (req, res, next) => {
           const token = req.header("Authorization").replace("Bearer ", "");
           if (token) {
                jwt.verify(token, process.env.JWT_ACCESS_KEY, (err, user) => {
@@ -16,7 +17,7 @@ const middlewareController = {
           } else {
                res.status(403).json({ status: '403', message: "Từ chối quyền truy cập!" });
           }
-     },
+     }),
 };
 
 module.exports = middlewareController;
