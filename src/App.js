@@ -7,6 +7,8 @@ import { useEffect } from 'react';
 import { isLogin } from './service/AuthService';
 import ForgotPassword from './screen/ForgotPassword/ForgotPassword';
 import ResetPassword from './screen/ResetPassword/ResetPassword';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
 
@@ -42,7 +44,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
-        </Routes>
+      </Routes>
+      <ToastContainer />
     </div>
   );
 }

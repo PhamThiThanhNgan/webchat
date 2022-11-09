@@ -32,11 +32,9 @@ export default function Nav(props) {
                 setShowDrawer(false);
             })
             .catch((error) => {
-                console.log('error: ', error);
+                console.log(error);
             });
     }
-
-    console.log('chatts: ', chats);
 
     const SingOut = () => {
         window.localStorage.removeItem('accessToken');

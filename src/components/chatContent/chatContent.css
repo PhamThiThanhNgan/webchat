@@ -107,6 +107,7 @@
   color: #d1d1d1;
 }
 .content__footer {
+  position: relative;
   padding-top: 30px;
 }
 .sendNewMessage {
@@ -166,4 +167,9 @@
 #sendMsgBtn {
   background-color: #3b5bfe;
   color: #fff;
+}
+aside.EmojiPickerReact.epr-main {
+  position: absolute !important;
+  right: 0;
+  bottom: 65px !important;
 }

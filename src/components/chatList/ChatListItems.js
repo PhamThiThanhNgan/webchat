@@ -1,18 +1,13 @@
 import React from "react";
 import Avatar from "./Avatar";
 
-const ChatListItems = ({user, animationDelay, active, isOnline, handleSelectedChat}) => {
-
-  // const selectChat = (e) => {
-  //   for (
-  //     let index = 0;
-  //     index < e.currentTarget.parentNode.children.length;
-  //     index++
-  //   ) {
-  //     e.currentTarget.parentNode.children[index].classList.remove("active");
-  //   }
-  //   e.currentTarget.classList.add("active");
-  // };
+const ChatListItems = ({
+  user,
+  animationDelay,
+  active, isOnline,
+  handleSelectedChat,
+  chat
+}) => {
 
     return (
       <div
@@ -28,7 +23,7 @@ const ChatListItems = ({user, animationDelay, active, isOnline, handleSelectedCh
         />
 
         <div className="userMeta">
-          <p>{user?.username}</p>
+          <p>{!chat.isGroupChat ? user?.username : chat.chatName}</p>
           <span className="activeTime">32 phút trước</span>
         </div>
       </div>

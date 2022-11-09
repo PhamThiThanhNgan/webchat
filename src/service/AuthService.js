@@ -1,6 +1,7 @@
 import axiosService from '../config/axiosService';
 import _ from 'lodash';
 
+//ket noi toi be
 export const register = (formData) => axiosService.post(
      `${process.env.REACT_APP_API_ENDPOINT}/auth/register`, formData, null
 );
