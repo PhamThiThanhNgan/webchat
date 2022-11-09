@@ -1,0 +1,30 @@
+import axiosService from '../config/axiosService';
+import _ from 'lodash';
+
+export const register = (formData) => axiosService.post(
+     `${process.env.REACT_APP_API_ENDPOINT}/auth/register`, formData, null
+);
+
+export const login = (formData) => axiosService.post(
+     `${process.env.REACT_APP_API_ENDPOINT}/auth/login`, formData, null
+);
+
+export const forgotPassword = (formData) => axiosService.post(
+     `${process.env.REACT_APP_API_ENDPOINT}/auth/forgot-password`, formData, null
+);
+
+export const recoveryPassword = (formData, id, token) => axiosService.post(
+     `${process.env.REACT_APP_API_ENDPOINT}/auth/reset-password/${id}/${token}`, formData, null
+);
+
+export const getMe = () => axiosService.get(`${process.env.REACT_APP_API_ENDPOINT}/auth/me`);
+
+export const isLogin = () => {
+     const accessToken = window.localStorage.getItem('accessToken');
+
+     return !_.isEmpty(accessToken);
+};
+
+export const saveToken = (token) => { window.localStorage.setItem('accessToken', token) };
+
+export const getAccessToken = () => { window.localStorage.getItem('accessToken') };
