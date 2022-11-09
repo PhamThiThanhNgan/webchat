@@ -1,154 +1,200 @@
-import React, { Component, useState, createRef, useEffect } from "react";
-
+import React, { useState, useEffect, useRef } from "react";
+import _ from "lodash";
 import "./chatContent.css";
+import io from "socket.io-client";
 import Avatar from "../chatList/Avatar";
 import ChatItem from "./ChatItem";
-import tham from '../../asset/image/tham.jpg'
-import ngan from '../../asset/image/ngan.jpg'
-export default class ChatContent extends Component {
-  messagesEndRef = createRef(null);
-  chatItms = [
-    {
-      key: 1,
-      image:
-        ngan,
-      type: "",
-      msg: "Hi Thém , Tao là Ngăn nè :3",
-    },
-    {
-      key: 2,
-      image:
-      tham ,
-      type: "other",
-      msg: " Ồ right , kệ m",
-    },
-    {
-      key: 3,
-      image:
-      tham,
-      type: "other",
-      msg: " Rồi nhắn tin cho tao chi",
-    },
-    {
-      key: 4,
-      image:
-      ngan,
-      type: "",
-      msg: "Tao nhắn tin để test mess thôi",
-    },
-    {
-      key: 5,
-      image:
-      tham,
-      type: "other",
-      msg: " Waooo dữ vậy sao",
-    },
-    {
-      key: 6,
-      image:
-      ngan,
-      type: "",
-      msg: " Chứ sao nữa bà zà",
-    },
-    {
-      key: 7,
-      image:
-      tham,
-      type: "other",
-      msg: "Baiiii",
-    },
-  ];
+import { useUserStore } from "../../store/store";
+import { getAllMessage, sendMessage } from "../../service/ChatService";
+import Loading from "../Loading/Loading";
+import { ReactComponent as UploadImage } from '../../asset/svg/UploadImage.svg';
+import EmojiPicker from "emoji-picker-react";
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      chat: this.chatItms,
-      msg: "",
-    };
-  }
+const ENDPOINT = "http://localhost:8000";
+var socket, selectedChatCompare;
 
-  scrollToBottom = () => {
-    this.messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+const ChatContent = ({ fetchAgain, setFetchAgain }) => {
+  const titleRef = useRef()
+
+  const [typing, setTyping] = useState(false);
+  const [istyping, setIsTyping] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [showPicker, setShowPicker] = useState(false);
+  const [image, setImage] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+  const selectedChat = useUserStore(state => state.selectedChat);
+  const User = useUserStore(state => state.user);
+  const [socketConnected, setSocketConnected] = useState(false);
+
+  const onEmojiClick = (emojiObject, event) => {
+    setNewMessage(prev => prev + emojiObject.emoji);
+    setShowPicker(false);
   };
 
-  componentDidMount() {
-    window.addEventListener("keydown", (e) => {
-      if (e.keyCode == 13) {
-        if (this.state.msg != "") {
-          this.chatItms.push({
-            key: 1,
-            type: "",
-            msg: this.state.msg,
-            image:
-            {tham},
-          });
-          this.setState({ chat: [...this.chatItms] });
-          this.scrollToBottom();
-          this.setState({ msg: "" });
-        }
+  const handleSendMessage = async (event) => {
+    if (event.key === "Enter" && newMessage) {
+      socket.emit("stop typing", selectedChat._id);
+      sendMessage({ content: newMessage, chatId: selectedChat?._id })
+        .then((response) => {
+          setNewMessage("");
+          socket.emit("new message", response?.data);
+          setMessages([...messages, response?.data]);
+        })
+        .catch((error) => {
+          console.error(error);
+        })
+    }
+  };
+
+  const handleSendImage = async (event) => {
+      sendMessage({ content: newMessage, chatId: selectedChat?._id, image: event.target.files[0]})
+        .then((response) => {
+          setImage("");
+          socket.emit("new message", response?.data);
+          setMessages([...messages, response?.data]);
+        })
+        .catch((error) => {
+          console.error(error);
+        })
+  };
+
+  const typingHandler = (e) => {
+    setNewMessage(e.target.value);
+
+    if (!socketConnected) return;
+
+    if (!typing) {
+      setTyping(true);
+      socket.emit("typing", selectedChat._id);
+    }
+    let lastTypingTime = new Date().getTime();
+    var timerLength = 3000;
+    setTimeout(() => {
+      var timeNow = new Date().getTime();
+      var timeDiff = timeNow - lastTypingTime;
+      if (timeDiff >= timerLength && typing) {
+        socket.emit("stop typing", selectedChat._id);
+        setTyping(false);
+      }
+    }, timerLength);
+  };
+
+  useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", User);
+    socket.on("connected", () => setSocketConnected(true));
+    socket.on("typing", () => setIsTyping(true));
+    socket.on("stop typing", () => setIsTyping(false));
+
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+
+    getAllMessage(selectedChat?._id)
+      .then((response) => {
+        setMessages(response?.data);
+        socket.emit("join chat", selectedChat._id);
+      })
+      .catch((error) => {
+        console.log('error', error);
+      })
+
+    selectedChatCompare = selectedChat;
+  }, [selectedChat]);
+
+  useEffect(() => {
+    socket.on("message recieved", (newMessageRecieved) => {
+      if (
+        !selectedChatCompare || // if chat is not selected or doesn't match current chat
+        selectedChatCompare._id !== newMessageRecieved.chat._id
+      ) {
+        // if (!notification.includes(newMessageRecieved)) {
+        //   setNotification([newMessageRecieved, ...notification]);
+        //   setFetchAgain(!fetchAgain);
+        // }
+      } else {
+        setMessages([...messages, newMessageRecieved]);
       }
     });
-    this.scrollToBottom();
-  }
-  onStateChange = (e) => {
-    this.setState({ msg: e.target.value });
-  };
+  });
 
-  render() {
-    return (
-      <div className="main__chatcontent">
-        <div className="content__header">
-          <div className="blocks">
-            <div className="current-chatting-user">
-              <Avatar
-                isOnline="active"
-                image= {tham}
-              />
-              <p> Tô Tồ Nhai Rớp Rớp</p>
-            </div>
-          </div>
+  useEffect(() => {
+    titleRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-          <div className="blocks">
-            <div className="settings">
-              <button className="btn-nobg">
-                <i className="fa fa-cog"></i>
-              </button>
+  return (
+    <div className="main__chatcontent">
+      {
+        _.isEmpty(selectedChat)
+          ? <>
+            <h1>Chào mừng đến với Chat App!</h1>
+            <div ref={titleRef} />
+          </>
+          : <>
+            <div className="content__header">
+              <div className="blocks">
+                <div className="current-chatting-user">
+                  <Avatar
+                    isOnline="active"
+                    image={selectedChat?.users[0]?._id === User?._id ? selectedChat?.users[1]?.avatar : selectedChat?.users[0]?.avatar}
+                  />
+                  <p>{selectedChat?.users[0]._id === User._id ? selectedChat?.users[1]?.username : selectedChat?.users[0]?.username}</p>
+                </div>
+              </div>
+
+              <div className="blocks">
+                <div className="settings">
+                  <button className="btn-nobg">
+                    <i className="fa fa-cog"></i>
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div className="content__body">
-          <div className="chat__items">
-            {this.state.chat.map((itm, index) => {
-              return (
-                <ChatItem
-                  animationDelay={index + 2}
-                  key={itm.key}
-                  user={itm.type ? itm.type : "me"}
-                  msg={itm.msg}
-                  image={itm.image}
+            <div className="content__body">
+              <div className="chat__items">
+                {messages && messages.map((item, index) => {
+                  return (
+                    <ChatItem
+                      animationDelay={index + 2}
+                      key={index}
+                      user={item?.sender?._id === User?._id ? "me" : "other"}
+                      msg={item?.content}
+                      imgMessage={item?.image}
+                      image={item?.sender?._id === User?._id ? selectedChat?.users[0]?.avatar : selectedChat?.users[1]?.avatar}
+                    />
+                  );
+                })}
+                <div ref={titleRef} />
+              </div>
+            </div>
+            <div className="content__footer">
+              {showPicker && <EmojiPicker
+                pickerStyle={{ width: '100%' }}
+                className="emoji-picker"
+                onEmojiClick={onEmojiClick} />}
+              {istyping ? <Loading /> : <></>}
+              <div className="sendNewMessage">
+                <input style={{ display: 'none' }} id='file' type='file' accept='image/*' onChange={handleSendImage}/>
+                <label htmlFor='file' className="addFiles">
+                  <UploadImage />
+                </label>
+                <input
+                  onKeyDown={handleSendMessage}
+                  type="text"
+                  placeholder="Nhập để gửi..."
+                  onChange={typingHandler}
+                  value={newMessage}
                 />
-              );
-            })}
-            <div ref={this.messagesEndRef} />
-          </div>
-        </div>
-        <div className="content__footer">
-          <div className="sendNewMessage">
-            <button className="addFiles">
-              <i className="fa fa-plus"></i>
-            </button>
-            <input
-              type="text"
-              placeholder="Nhập để gửi..."
-              onChange={this.onStateChange}
-              value={this.state.msg}
-            />
-            <button className="btnSendMsg" id="sendMsgBtn">
-              <i className="fa fa-paper-plane"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+                <button className="btnSendMsg" id="sendMsgBtn" onClick={() => setShowPicker(val => !val)}>
+                  <i className="fa fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
+          </>
+      }
+    </div>
+  );
 }
+
+export default ChatContent;

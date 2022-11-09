@@ -7,6 +7,9 @@
       height: 100vh;
       color: black;
       background: #0091ff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
       .avt{
         padding-top: 10px;
         img{

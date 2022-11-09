@@ -27,4 +27,7 @@ export const isLogin = () => {
 
 export const saveToken = (token) => { window.localStorage.setItem('accessToken', token) };
 
-export const getAccessToken = () => { window.localStorage.getItem('accessToken') };
+export const getAccessToken = () => {
+     const token = window.localStorage.getItem('accessToken')
+     return token;
+};

@@ -43,7 +43,7 @@
 }
 .chatlist__items {
   margin-top: 10px;
-  overflow: auto;
+  overflow: hidden;
   max-height: calc(120vh - calc(100vh / 2));
 }
 

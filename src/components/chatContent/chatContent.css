@@ -2,6 +2,9 @@
   flex-grow: 1;
   padding: 20px 40px;
   height: 96vh;
+  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
   /* max-width: 63%;
   border-right: 1px solid #ebe7fb; */
 }
@@ -116,7 +119,6 @@
 .sendNewMessage button {
   width: 36px;
   height: 36px;
-  background-color: #ecefff;
   border: none;
   box-shadow: none;
   outline: none;
@@ -132,6 +134,26 @@
   transform: scale(1.2);
 }
 .sendNewMessage button i {
+  display: block;
+}
+.sendNewMessage label {
+  width: 36px;
+  height: 36px;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #4665ff;
+  padding: 0;
+  border-radius: 5px;
+  line-height: 36px;
+  transition: all 0.3s cubic-bezier(0.88, 0.19, 0.37, 1.11);
+}
+.sendNewMessage label:hover {
+  transform: scale(1.2);
+}
+.sendNewMessage label i {
   display: block;
 }
 .sendNewMessage input {

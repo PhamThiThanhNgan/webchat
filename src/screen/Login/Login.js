@@ -8,11 +8,13 @@ import { Col, InputGroup, Row } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik } from 'formik';
 import { login, saveToken } from '../../service/AuthService';
+import { useUserStore } from '../../store/store';
 
 function Login() {
 
   const navigate = useNavigate();
   const [validate, setValidate] = useState('');
+  const updateUser = useUserStore(state => state.updateUser);
 
   const initialValues = {
     email: '',
@@ -33,6 +35,7 @@ function Login() {
     login(values)
       .then((response) => {
         saveToken(response?.data?.data?.accessToken);
+        updateUser(response?.data?.data);
         navigate('/');
       })
       .catch((err) => {

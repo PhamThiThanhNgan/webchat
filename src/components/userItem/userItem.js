@@ -1,7 +1,7 @@
 import React from "react";
-import Avatar from "./Avatar";
+import Avatar from "../chatList/Avatar";
 
-const ChatListItems = ({user, animationDelay, active, isOnline, handleSelectedChat}) => {
+const UserItem = ({name, animationDelay, active, isOnline, image, handleSelectedChat}) => {
 
   // const selectChat = (e) => {
   //   for (
@@ -19,20 +19,22 @@ const ChatListItems = ({user, animationDelay, active, isOnline, handleSelectedCh
         style={{ animationDelay: `0.${animationDelay}s` }}
         onClick={handleSelectedChat}
         className={`chatlist__item ${
-          active
+          active ? active : ""
         } `}
       >
         <Avatar
-          image={ user?.avatar }
+          image={
+            image ? image : "http://placehold.it/80x80"
+          }
           isOnline={isOnline}
         />
 
         <div className="userMeta">
-          <p>{user?.username}</p>
+          <p>{name}</p>
           <span className="activeTime">32 phút trước</span>
         </div>
       </div>
     );
 }
 
-export default ChatListItems;
+export default UserItem;
